@@ -1,0 +1,244 @@
+---
+title: "Penguin Analysis"
+author: "Wim van Saase"
+date:   last-modified
+format: html
+code-fold: true
+editor: visual
+---
+
+![](images/lter_penguins.png){fig-align="center"}
+
+## Analysis and Workflow
+
+In this document I combine the analysis of the Penguin dataset [LINK](https://allisonhorst.github.io/palmerpenguins/ "Link naar palmerpenguins"), witch is part of the palmerpenguins package, with focus on my R programming workflow, supported bu Yan Holtz's course [LINK](https://www.productive-r-workflow.com "Link naar de course").
+
+## Work habits
+
+Restart R very often and re-run your under-development script from the top.
+
+-   Restart R Ctrl+Shift+F10
+
+-   Re-run all code up to the current line with Ctrl+Alt+B
+
+## Using libraries
+
+Running and citating libraries
+
+```{r, warning: false}
+#| warning: false
+    library(tidyverse)
+    library(styler)
+    library(readxl)
+    library(patchwork)
+```
+
+## LOAD DATA
+
+Data laden uit een XLSX CSV of RDS file.
+
+```{r}
+#| echo: false
+    data <- readRDS("../input/data_clean.rds")
+```
+
+## EXPLORE DATA
+
+![](images/culmen_depth.png)
+
+### Samenvatting per kolom
+
+```{r}
+#| echo: false
+    summary(data)
+```
+
+### Unieke waarde van categoriale variabelen
+
+Verschillende soorten die zijn onderzocht (**species**)
+
+```{r}
+#| echo: false
+    unique(data$species)
+```
+
+De eilanden waarop de waarnemingen zijn gedaan (**islands**)
+
+```{r}
+#| echo: false
+    unique(data$island)
+```
+
+Waargenomen geslachten (**sex**)
+
+```{r}
+#| echo: false
+    unique(data$sex)
+```
+
+Jaren waarin de waarnemingen zijn gedaan (**year**)
+
+```{r}
+#| echo: false
+    unique(data$year)
+```
+
+### Aantallen diverse doorsnedes
+
+```{r}
+#| echo: false
+#| layout-ncol: 3
+    data %>% count(island,sort=TRUE)
+    
+    data %>% count(species,sort=TRUE)
+    
+    data %>% count(year)
+    
+    data %>% count(species,year)
+      
+    data %>% count(island,species,sort=TRUE)
+      
+    data %>% count(species,island,sort=TRUE)
+       
+    data %>% count(island,year,species)
+```
+
+### Simpele visualisatie
+
+Aantallen (**count**), per jaar (**bovenste labels**), per eiland (**rechter labels**), per soort (**species**).
+
+Om te helpen bepalen welke combinaties van analyses mogenlijk zijn.
+
+```{r, fig.align='center'}
+#| echo: false
+    ggplot(data = data,
+    aes(species,fill=species))+
+    geom_bar() +
+    facet_grid(vars(island), vars(year)) +
+    theme(
+    legend.position="none",
+    panel.spacing = unit(0.1, "lines"),
+    axis.ticks.x=element_blank()
+    )
+```
+
+Distributie
+
+```{r, warning=FALSE, fig.height=3, fig.width=9}
+p1 <- ggplot(data = data, aes(body_mass_g))+
+    geom_histogram() +
+coord_flip()
+
+p2 <- ggplot(data = data, aes(body_mass_g))+
+    geom_boxplot() +
+    coord_flip()
+
+p3 <- ggplot(data = data, aes(body_mass_g))+
+    geom_bar() +
+    coord_flip()
+
+p1 + p2 + p3
+```
+
+## Functies aanroepen vanuit andere file
+
+```{r}
+#| echo: false
+source("../r/Functies.R")
+```
+
+### Diverse functies gebruiken
+
+Gemiddelde berekenen
+
+```{r, fig.align='center'}
+#| echo: false
+
+  # gebruik functie 1 F1
+  F1_calc_mean_bill_species_Island("Adelie","Dream")
+```
+
+Een scatterplot maken
+
+```{r, fig.align='center'}
+#| echo: false
+
+# Gebruik functie 2 F2
+  F2_create_scatterplot(data, "Adelie", "Torgersen")
+```
+
+Gemiddelde berekenen gecombineerd met scatterplot
+
+```{r, fig.align='center'}
+#| echo: false
+
+  # Gebruik functie 3 F3 Call the function for each island
+  F3_calc_mean_bill_species_Island_and_Plot("Adelie","Biscoe")
+```
+
+## PLOT DATA
+
+### Scatterplot
+
+```{r}
+#| echo: false
+penguins_clean <- na.omit(data)
+plot(penguins_clean$bill_length_mm, penguins_clean$bill_depth_mm, type = "n", xlab = "Bill Length (mm)", ylab = "Bill Depth (mm)", main = "Penguin Bill Dimensions")
+points(
+  penguins_clean$bill_length_mm[penguins_clean$species == "Adelie"], penguins_clean$bill_depth_mm[penguins_clean$species == "Adelie"],
+  col = "red", pch = 16
+)
+points(penguins_clean$bill_length_mm[penguins_clean$species == "Chinstrap"], penguins_clean$bill_depth_mm[penguins_clean$species == "Chinstrap"], col = "green", pch = 17)
+points(penguins_clean$bill_length_mm[penguins_clean$species == "Gentoo"],
+  penguins_clean$bill_depth_mm[penguins_clean$species == "Gentoo"],
+  col = "blue", pch = 18
+)
+legend("topright",
+  legend = unique(penguins_clean$species),
+  col = c(
+    "red",
+    "green",
+    "blue"
+  ), pch = c(16, 17, 18)
+)
+```
+
+## Tekst met Markdown
+
+-   Hallo *Hallo* met \* tekst \* of \_ tekst \_
+
+-   Hallo **Hallo** met \*\* tekst \*\* of \_\_ tekst \_\_
+
+-   Hallo **`Hallo`** met \` tekst
+
+-   Type \# aan begin van de teskt om een kop te starten, of meerdere \##
+
+    ::: callout-note
+    Note that there are five types of callouts, including:
+
+    \`note\`, \`warning\`, \`important\`, \`tip\`, and \`caution\`.
+    :::
+
+    ::: callout-tip
+    \## Tip with Title
+
+    This is an example of a callout with a title.
+    :::
+
+    ::: {.callout-caution collapse="true"}
+    \## Expand To Learn About Collapse
+
+    This is an example of a 'folded' caution callout that can be expanded by the user. You can use \`collapse="true"\` to collapse it by default or \`collapse="false"\` to make a collapsible callout that is expanded by default.
+    :::
+
+Meer opmaak is te vinden op de Quarto website [LINK](https://quarto.org/docs/authoring/markdown-basics.html "Link naar Quarto website").
+
+## Citation
+
+**R** - R Core Team (2023). R: A language and environment for statistical computing. R Foundation for Statistical Computing, Vienna, Austria. URL https://www.R-project.org/.
+
+**tidyverse** - Wickham H, Averick M, Bryan J, Chang W, McGowan LD, François R, Grolemund G, Hayes A, Henry L, Hester J, Kuhn M, Pedersen TL, Miller E, Bache SM, Müller K, Ooms J, Robinson D, Seidel DP, Spinu V, Takahashi K, Vaughan D, Wilke C, Woo K, Yutani H (2019). "Welcome to the tidyverse." \_Journal of Open Source Software\_, \*4\*(43), 1686. doi:10.21105/joss.01686 \<https://doi.org/10.21105/joss.01686\>.
+
+**readxl** - Wickham H, Bryan J (2023). \_readxl: Read Excel Files\_. R package version 1.4.3, \<https://CRAN.R-project.org/package=readxl\>.
+
+**styler** - Müller K, Walther L (2023). *styler: Non-Invasive Pretty Printing of R Code*. R package version 1.10.2, \<thhps://CRAN.R-project.org/packages=styler\>.
