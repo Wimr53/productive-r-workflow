@@ -44,7 +44,7 @@ Data laden uit een XLSX CSV of RDS file.
 
 ## EXPLORE DATA
 
-![](images/culmen_depth.png)
+![](images/culmen_depth.png){fig-align="center"}
 
 ### Samenvatting per kolom
 
